@@ -1,4 +1,5 @@
 <?php
+
 namespace AlbumTest\Controller;
 
 use Laminas\Stdlib\ArrayUtils;
@@ -37,7 +38,7 @@ class AlbumControllerTest extends AbstractHttpControllerTestCase
         return $this->albumTable;
     }
 
-    protected function setUp() : void
+    protected function setUp(): void
     {
         // The module configuration should still be applicable for tests.
         // You can override configuration here with test case specific values,
@@ -82,6 +83,48 @@ class AlbumControllerTest extends AbstractHttpControllerTestCase
         ];
 
         $this->dispatch('/album/add', 'POST', $postData);
+        $this->assertResponseStatusCode(302);
+        $this->assertRedirectTo('/album');
+    }
+
+    public function testEditActionCanBeAccessed()
+    {
+        // Mock the AlbumTable to return a dummy album
+        $this->albumTable->expects($this->once())
+            ->method('getAlbum')
+            ->willReturn(new Album());
+
+        $this->albumTable->expects($this->once())
+            ->method('saveAlbum')
+            ->with($this->isInstanceOf(Album::class));
+
+        // Simulate a POST request with some data
+        $postData = [
+            'title' => 'Updated Album Title',
+            'artist' => 'Updated Artist Name',
+            'id' => '1', // assuming this is an existing album ID
+        ];
+
+
+        $this->dispatch('/album/edit/1', 'POST', $postData);
+        $this->assertResponseStatusCode(302);
+        $this->assertRedirectTo('/album');
+    }
+
+    public function testDeleteActionCanBeAccessed()
+    {
+        // Mock the AlbumTable to return a dummy album
+        $this->albumTable->expects($this->once())
+            ->method('deleteAlbum')
+            ->with(1);
+
+        // Simulate a POST request with some data
+        $postData = [
+            'del' => 'Yes',
+            'id' => '1'
+        ];
+
+        $this->dispatch('/album/delete/1', 'POST', $postData);
         $this->assertResponseStatusCode(302);
         $this->assertRedirectTo('/album');
     }
